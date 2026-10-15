@@ -4,90 +4,857 @@
 <meta charset="utf-8">
 <title>artyrkalauch — Minecraft Launcher</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Быстрый и удобный лаунчер Minecraft. Поддержка Fabric, менеджер модов, несколько аккаунтов, без .NET.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%2322c55e'/><text x='50' y='72' font-size='70' font-weight='bold' text-anchor='middle' fill='%23052e16' font-family='Arial'>A</text></svg>">
+
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    background: radial-gradient(ellipse at 15% 0%, #131722 0%, #0a0b0f 70%);
-    color: #e9ebf2;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
-  .card {
-    background: #12141c;
-    border: 1px solid #1c2030;
-    border-radius: 20px;
-    padding: 48px 40px;
-    max-width: 480px;
-    width: 100%;
-    text-align: center;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-  }
-  .logo {
-    width: 88px; height: 88px;
-    background: linear-gradient(135deg, #22c55e, #16a34a);
-    border-radius: 24px;
-    margin: 0 auto 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 48px;
-    font-weight: bold;
-    color: #052e16;
-    box-shadow: 0 0 60px rgba(34,197,94,0.4);
-  }
-  h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
-  .sub { color: #7e8499; font-size: 14px; margin-bottom: 32px; }
-  .btn {
-    display: block;
-    background: linear-gradient(135deg, #22c55e, #16a34a);
-    color: #052e16;
-    text-decoration: none;
-    padding: 18px 24px;
-    border-radius: 12px;
-    font-weight: 700;
-    font-size: 16px;
-    transition: 0.15s;
-    box-shadow: 0 8px 32px rgba(34,197,94,0.3);
-  }
-  .btn:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(34,197,94,0.5); }
-  .info { color: #565d72; font-size: 12px; margin-top: 24px; line-height: 1.6; }
-  .feat { display: flex; gap: 8px; justify-content: center; margin-top: 24px; flex-wrap: wrap; }
-  .feat span {
-    background: #0e2016;
-    border: 1px solid #22c55e;
-    color: #4ade80;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-  }
+:root {
+  --bg: #0a0b0f;
+  --card: rgba(18, 20, 28, 0.7);
+  --card-solid: #12141c;
+  --line: rgba(255,255,255,0.08);
+  --line2: rgba(255,255,255,0.15);
+  --fg: #e9ebf2;
+  --dim: #a8b0c2;
+  --dim2: #6b7289;
+  --accent: #22c55e;
+  --accent2: #4ade80;
+  --accent-dark: #052e16;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  overflow-x: hidden;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============ ГЕРОЙ С КАРТИНКОЙ ============ */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 80px 24px 120px;
+}
+
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  background-image: url('hero.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 0;
+  transform: scale(1.05);
+  animation: kenburns 30s ease-in-out infinite alternate;
+}
+@keyframes kenburns {
+  from { transform: scale(1.05) translateX(0); }
+  to   { transform: scale(1.15) translateX(-15px); }
+}
+
+.hero-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(10,11,15,0.55) 0%, rgba(10,11,15,0.35) 40%, rgba(10,11,15,0.95) 100%),
+    radial-gradient(ellipse at 50% 40%, transparent 30%, rgba(10,11,15,0.7) 100%);
+}
+
+/* доп. свечение поверх */
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 200px;
+  background: linear-gradient(180deg, rgba(10,11,15,0.7), transparent);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* ============ ХЕДЕР ============ */
+header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  background: rgba(10,11,15,0.35);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  transition: background 0.3s;
+}
+.nav {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: #fff;
+  font-weight: 700;
+  font-size: 16px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+.brand-logo {
+  width: 34px; height: 34px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #4ade80, #16a34a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #052e16;
+  font-size: 18px;
+  font-weight: 900;
+  box-shadow: 0 0 20px rgba(34,197,94,0.5);
+}
+.nav-links { display: flex; gap: 28px; align-items: center; }
+.nav-links a {
+  color: rgba(255,255,255,0.85);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.15s;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+.nav-links a:hover { color: #fff; }
+.nav-btn {
+  background: linear-gradient(135deg, #4ade80, #16a34a);
+  color: #052e16 !important;
+  text-decoration: none;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  transition: 0.2s;
+  box-shadow: 0 4px 20px rgba(34,197,94,0.4);
+  text-shadow: none !important;
+}
+.nav-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 30px rgba(34,197,94,0.6); }
+
+@media (max-width: 720px) {
+  .nav-links a:not(.nav-btn) { display: none; }
+}
+
+/* ============ КОНТЕНТ ГЕРОЯ ============ */
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 820px;
+  text-align: center;
+  animation: fadeInUp 0.9s ease both;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(10,11,15,0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(74,222,128,0.4);
+  color: #4ade80;
+  padding: 8px 16px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 32px;
+  box-shadow: 0 4px 30px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+}
+.pill-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 10px #4ade80;
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
+
+.hero-logo {
+  width: 110px; height: 110px;
+  border-radius: 28px;
+  background: linear-gradient(135deg, #4ade80, #16a34a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 32px;
+  font-size: 60px;
+  font-weight: 900;
+  color: #052e16;
+  box-shadow:
+    0 0 100px rgba(74,222,128,0.7),
+    0 25px 60px rgba(0,0,0,0.6),
+    inset 0 2px 0 rgba(255,255,255,0.3);
+  position: relative;
+  animation: heroLogoFloat 6s ease-in-out infinite;
+}
+@keyframes heroLogoFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+.hero-logo::after {
+  content: '';
+  position: absolute;
+  inset: -12px;
+  border-radius: 34px;
+  background: linear-gradient(135deg, rgba(74,222,128,0.6), transparent);
+  filter: blur(24px);
+  z-index: -1;
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50%      { opacity: 0.9; transform: scale(1.08); }
+}
+
+h1.hero-title {
+  font-size: clamp(40px, 7vw, 76px);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  margin-bottom: 24px;
+  color: #fff;
+  text-shadow:
+    0 2px 20px rgba(0,0,0,0.7),
+    0 4px 40px rgba(0,0,0,0.5);
+}
+h1.hero-title .grad {
+  background: linear-gradient(135deg, #86efac, #4ade80 50%, #22c55e);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 30px rgba(74,222,128,0.4));
+}
+
+.hero-sub {
+  font-size: 18px;
+  color: rgba(255,255,255,0.85);
+  max-width: 560px;
+  margin: 0 auto 44px;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.7);
+}
+
+.hero-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, #4ade80, #16a34a);
+  color: #052e16;
+  text-decoration: none;
+  padding: 18px 34px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 16px;
+  transition: 0.2s;
+  box-shadow: 0 12px 40px rgba(34,197,94,0.5), inset 0 1px 0 rgba(255,255,255,0.3);
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  position: relative;
+  overflow: hidden;
+}
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent, rgba(255,255,255,0.4), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s;
+}
+.btn-primary:hover::before { transform: translateX(100%); }
+.btn-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 50px rgba(34,197,94,0.7), inset 0 1px 0 rgba(255,255,255,0.3);
+}
+.btn-primary svg { transition: transform 0.2s; position: relative; z-index: 1; }
+.btn-primary:hover svg { transform: translateY(3px); }
+.btn-primary span { position: relative; z-index: 1; }
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(10,11,15,0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  text-decoration: none;
+  padding: 18px 32px;
+  border-radius: 14px;
+  font-weight: 600;
+  font-size: 15px;
+  transition: 0.2s;
+  cursor: pointer;
+  font-family: inherit;
+}
+.btn-ghost:hover {
+  background: rgba(10,11,15,0.7);
+  border-color: rgba(255,255,255,0.35);
+  transform: translateY(-2px);
+}
+
+.hero-meta {
+  margin-top: 32px;
+  color: rgba(255,255,255,0.6);
+  font-size: 13px;
+  text-shadow: 0 1px 5px rgba(0,0,0,0.8);
+}
+.hero-meta span { margin: 0 8px; opacity: 0.5; }
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* индикатор скролла */
+.scroll-hint {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  color: rgba(255,255,255,0.5);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  animation: fadeInUp 1s 0.6s ease both;
+}
+.scroll-hint::after {
+  content: '';
+  width: 1px;
+  height: 30px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.5), transparent);
+  animation: scrollPulse 2s ease-in-out infinite;
+}
+@keyframes scrollPulse {
+  0%, 100% { transform: scaleY(0.4); opacity: 0.3; transform-origin: top; }
+  50%      { transform: scaleY(1); opacity: 1; transform-origin: top; }
+}
+
+/* ============ ОСНОВНОЙ КОНТЕНТ ============ */
+main { position: relative; z-index: 1; background: var(--bg); }
+
+/* декоративный градиент между hero и features */
+.fade-top {
+  position: relative;
+  height: 100px;
+  margin-top: -100px;
+  background: linear-gradient(180deg, transparent, var(--bg));
+  z-index: 2;
+  pointer-events: none;
+}
+
+section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 100px 24px;
+  position: relative;
+}
+
+.section-head {
+  text-align: center;
+  margin-bottom: 60px;
+}
+.section-label {
+  display: inline-block;
+  color: var(--accent2);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  padding: 6px 14px;
+  background: rgba(34,197,94,0.08);
+  border: 1px solid rgba(34,197,94,0.2);
+  border-radius: 100px;
+}
+.section-title {
+  font-size: clamp(28px, 4.5vw, 46px);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  margin-bottom: 14px;
+}
+.section-title .grad {
+  background: linear-gradient(135deg, #86efac, #22c55e);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.section-desc {
+  color: var(--dim);
+  font-size: 16px;
+  max-width: 540px;
+  margin: 0 auto;
+}
+
+/* фичи */
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+.feature {
+  background: var(--card-solid);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 30px 28px;
+  transition: 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+.feature::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(74,222,128,0.6), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.feature::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%),
+              rgba(34,197,94,0.08), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.feature:hover {
+  border-color: rgba(74,222,128,0.3);
+  transform: translateY(-6px);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.5), 0 0 40px rgba(34,197,94,0.05);
+}
+.feature:hover::before { opacity: 1; }
+.feature:hover::after { opacity: 1; }
+
+.feature-icon {
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(34,197,94,0.18), rgba(22,163,74,0.08));
+  border: 1px solid rgba(34,197,94,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin-bottom: 20px;
+  transition: 0.3s;
+}
+.feature:hover .feature-icon {
+  transform: scale(1.08) rotate(-4deg);
+  box-shadow: 0 8px 24px rgba(34,197,94,0.25);
+}
+.feature h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  letter-spacing: -0.01em;
+}
+.feature p {
+  color: var(--dim);
+  font-size: 14.5px;
+  line-height: 1.65;
+}
+
+/* шаги */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+  counter-reset: step;
+  position: relative;
+}
+.step {
+  background: var(--card-solid);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 32px 28px;
+  position: relative;
+  transition: 0.3s;
+}
+.step:hover {
+  border-color: rgba(74,222,128,0.3);
+  transform: translateY(-4px);
+}
+.step-num {
+  counter-increment: step;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #4ade80, #16a34a);
+  color: #052e16;
+  font-weight: 900;
+  font-size: 17px;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 20px rgba(34,197,94,0.3);
+}
+.step-num::before { content: counter(step); }
+.step h4 {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  letter-spacing: -0.01em;
+}
+.step p {
+  color: var(--dim);
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+
+/* ============ CTA ============ */
+.cta-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 60px 24px 120px;
+}
+.cta {
+  background:
+    linear-gradient(135deg, rgba(34,197,94,0.12), rgba(22,163,74,0.03)),
+    var(--card-solid);
+  border: 1px solid rgba(74,222,128,0.3);
+  border-radius: 32px;
+  padding: 80px 40px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    0 0 80px rgba(34,197,94,0.1),
+    inset 0 1px 0 rgba(255,255,255,0.05);
+}
+.cta::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: 50%;
+  transform: translateX(-50%);
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(circle, rgba(34,197,94,0.2) 0%, transparent 65%);
+  filter: blur(60px);
+  pointer-events: none;
+  animation: pulse-glow 4s ease-in-out infinite;
+}
+.cta h2 {
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  margin-bottom: 14px;
+  position: relative;
+}
+.cta p {
+  color: var(--dim);
+  font-size: 17px;
+  margin-bottom: 36px;
+  position: relative;
+}
+.cta .btn-primary {
+  position: relative;
+  font-size: 17px;
+  padding: 22px 44px;
+}
+
+/* ============ ФУТЕР ============ */
+footer {
+  border-top: 1px solid var(--line);
+  padding: 48px 24px;
+  background: #08090c;
+}
+.footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--dim);
+  font-size: 13px;
+}
+.footer-logo {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #4ade80, #16a34a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #052e16;
+  font-weight: 900;
+  font-size: 14px;
+}
+.footer-links {
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+.footer-links a {
+  color: var(--dim);
+  text-decoration: none;
+  font-size: 13px;
+  transition: color 0.15s;
+}
+.footer-links a:hover { color: var(--accent2); }
+.footer-copy {
+  width: 100%;
+  text-align: center;
+  color: var(--dim2);
+  font-size: 12px;
+  margin-top: 20px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+/* скроллбар */
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb {
+  background: #2a3140;
+  border-radius: 5px;
+  border: 2px solid var(--bg);
+}
+::-webkit-scrollbar-thumb:hover { background: #3b4252; }
+
+/* мобилки */
+@media (max-width: 640px) {
+  .hero { padding: 100px 20px 100px; min-height: 92vh; }
+  .hero-logo { width: 88px; height: 88px; font-size: 48px; border-radius: 22px; }
+  .btn-primary, .btn-ghost { padding: 15px 22px; font-size: 14px; width: 100%; justify-content: center; }
+  .hero-actions { flex-direction: column; width: 100%; max-width: 340px; margin: 0 auto; }
+  section { padding: 70px 20px; }
+  .cta { padding: 50px 24px; }
+  .cta .btn-primary { padding: 18px 28px; font-size: 15px; width: 100%; }
+  .scroll-hint { display: none; }
+}
 </style>
 </head>
 <body>
-  <div class="card">
-    <div class="logo">A</div>
-    <h1>artyrkalauch</h1>
-    <div class="sub">Minecraft Launcher</div>
 
-    <a class="btn" href="https://github.com/ТВОЙ_НИК/artyrkalauch/releases/latest/download/artyrkalauch-setup-2.0.0.exe">
-      Скачать для Windows
+<!-- ХЕДЕР -->
+<header>
+  <div class="nav">
+    <a class="brand" href="#">
+      <div class="brand-logo">A</div>
+      artyrkalauch
     </a>
+    <nav class="nav-links">
+      <a href="#features">Возможности</a>
+      <a href="#how">Установка</a>
+      <a href="#download" class="nav-btn">Скачать</a>
+    </nav>
+  </div>
+</header>
 
-    <div class="feat">
-      <span>Fabric</span>
-      <span>Моды</span>
-      <span>Аккаунты</span>
-      <span>Без .NET</span>
+<!-- ГЕРОЙ -->
+<section class="hero">
+  <div class="hero-bg"></div>
+
+  <div class="hero-content">
+    <div class="pill">
+      <span class="pill-dot"></span>
+      v3.2.0 · Windows 10/11
     </div>
 
-    <div class="info">
-      Windows 10/11 x64 · установщик ~150 МБ<br>
-      После скачивания просто запусти файл
+    <div class="hero-logo">A</div>
+
+    <h1 class="hero-title">
+      Minecraft<br>
+      <span class="grad">без лишнего</span>
+    </h1>
+
+    <p class="hero-sub">
+      Быстрый лаунчер с поддержкой Fabric, менеджером модов
+      и несколькими аккаунтами. Без .NET, без рекламы, без телеметрии.
+    </p>
+
+    <div class="hero-actions">
+      <a class="btn-primary" href="https://github.com/ТВОЙ_НИК/artyrkalauch/releases/latest/download/artyrkalauch-setup-3.2.0.exe">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        <span>Скачать для Windows</span>
+      </a>
+      <a class="btn-ghost" href="#features">
+        Узнать больше
+      </a>
+    </div>
+
+    <div class="hero-meta">
+      ~150 МБ<span>·</span>установщик в один клик<span>·</span>работает без зависимостей
     </div>
   </div>
+
+  <div class="scroll-hint">Листай вниз</div>
+</section>
+
+<main>
+
+  <!-- FEATURES -->
+  <section id="features">
+    <div class="section-head">
+      <div class="section-label">Возможности</div>
+      <h2 class="section-title">Всё что нужно и <span class="grad">ничего лишнего</span></h2>
+      <p class="section-desc">Шесть причин почему этот лаунчер лучше стандартного</p>
+    </div>
+
+    <div class="features">
+      <div class="feature">
+        <div class="feature-icon">⚡</div>
+        <h3>Молниеносный запуск</h3>
+        <p>Скачанные версии запускаются мгновенно. Никаких проверок и перекачиваний при каждом старте — маркер установки запоминает состояние.</p>
+      </div>
+
+      <div class="feature">
+        <div class="feature-icon">🎨</div>
+        <h3>Fabric из коробки</h3>
+        <p>Выбери версию Minecraft, нажми кнопку Fabric — лаунчер сам подтянет загрузчик и все зависимости. Никакой ручной возни.</p>
+      </div>
+
+      <div class="feature">
+        <div class="feature-icon">📦</div>
+        <h3>Менеджер модов</h3>
+        <p>Перетаскивай .jar прямо в окно, включай и выключай моды одним кликом. Встроенный скачиватель по ссылке Modrinth или CurseForge.</p>
+      </div>
+
+      <div class="feature">
+        <div class="feature-icon">👤</div>
+        <h3>Несколько аккаунтов</h3>
+        <p>Пиратские ники и вход через Microsoft. Переключайся между профилями в один клик — как в TLauncher, только чище.</p>
+      </div>
+
+      <div class="feature">
+        <div class="feature-icon">⚙️</div>
+        <h3>Настройки как надо</h3>
+        <p>Полноэкранный режим, память, Java-аргументы и аргументы Minecraft — всё в отдельном окне. Сохраняется между запусками.</p>
+      </div>
+
+      <div class="feature">
+        <div class="feature-icon">🔒</div>
+        <h3>Без .NET и без вони</h3>
+        <p>Один exe, работает на любой Windows 10/11 x64. Никакой телеметрии, рекламы, скрытых процессов и прочей дичи.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW -->
+  <section id="how">
+    <div class="section-head">
+      <div class="section-label">Установка</div>
+      <h2 class="section-title">Три шага — <span class="grad">и в игре</span></h2>
+      <p class="section-desc">От скачивания до первого блока — меньше минуты</p>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num"></div>
+        <h4>Скачай установщик</h4>
+        <p>Один exe файл ~150 МБ. Никаких дополнительных зависимостей и .NET Runtime.</p>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <h4>Запусти и поставь</h4>
+        <p>Мастер установки сам всё распакует. По желанию — ярлык на рабочем столе.</p>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <h4>Создай аккаунт и играй</h4>
+        <p>Введи ник или войди через Microsoft. Выбери версию, нажми Играть.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <div class="cta-section" id="download">
+    <div class="cta">
+      <h2>Готов попробовать?</h2>
+      <p>Скачай последнюю версию — установка займёт меньше минуты</p>
+      <a class="btn-primary" href="https://github.com/ТВОЙ_НИК/artyrkalauch/releases/latest/download/artyrkalauch-setup-3.2.0.exe">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        <span>Скачать artyrkalauch 3.2.0</span>
+      </a>
+    </div>
+  </div>
+
+</main>
+
+<!-- ФУТЕР -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="footer-logo">A</div>
+      <span>artyrkalauch · minecraft launcher</span>
+    </div>
+    <div class="footer-links">
+      <a href="https://github.com/ТВОЙ_НИК/artyrkalauch">GitHub</a>
+      <a href="https://github.com/ТВОЙ_НИК/artyrkalauch/releases">Все версии</a>
+      <a href="https://github.com/ТВОЙ_НИК/artyrkalauch/issues">Проблемы</a>
+    </div>
+  </div>
+  <div class="footer-inner">
+    <div class="footer-copy">
+      © 2026 artyrkalauch · не связан с Mojang AB
+    </div>
+  </div>
+</footer>
+
+<script>
+// лёгкий эффект подсветки карточек за курсором
+document.querySelectorAll('.feature').forEach(el => {
+  el.addEventListener('mousemove', e => {
+    const r = el.getBoundingClientRect();
+    el.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+    el.style.setProperty('--my', (e.clientY - r.top) + 'px');
+  });
+});
+
+// затемнение хедера при скролле
+const header = document.querySelector('header');
+window.addEventListener('scroll', () => {
+  header.style.background = window.scrollY > 60
+    ? 'rgba(10,11,15,0.85)'
+    : 'rgba(10,11,15,0.35)';
+});
+</script>
+
 </body>
 </html>
