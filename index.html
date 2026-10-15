@@ -48,7 +48,7 @@ body {
 .hero-bg {
   position: absolute;
   inset: 0;
-  background-image: url('hero.jpg');
+  background-image: url('images.jpeg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -70,7 +70,6 @@ body {
     radial-gradient(ellipse at 50% 40%, transparent 30%, rgba(10,11,15,0.7) 100%);
 }
 
-/* доп. свечение поверх */
 .hero::before {
   content: '';
   position: absolute;
@@ -331,7 +330,6 @@ h1.hero-title .grad {
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* индикатор скролла */
 .scroll-hint {
   position: absolute;
   bottom: 30px;
@@ -362,16 +360,6 @@ h1.hero-title .grad {
 
 /* ============ ОСНОВНОЙ КОНТЕНТ ============ */
 main { position: relative; z-index: 1; background: var(--bg); }
-
-/* декоративный градиент между hero и features */
-.fade-top {
-  position: relative;
-  height: 100px;
-  margin-top: -100px;
-  background: linear-gradient(180deg, transparent, var(--bg));
-  z-index: 2;
-  pointer-events: none;
-}
 
 section {
   max-width: 1200px;
@@ -416,7 +404,6 @@ section {
   margin: 0 auto;
 }
 
-/* фичи */
 .features {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -486,7 +473,6 @@ section {
   line-height: 1.65;
 }
 
-/* шаги */
 .steps {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -533,7 +519,6 @@ section {
   line-height: 1.6;
 }
 
-/* ============ CTA ============ */
 .cta-section {
   max-width: 1200px;
   margin: 0 auto;
@@ -584,7 +569,6 @@ section {
   padding: 22px 44px;
 }
 
-/* ============ ФУТЕР ============ */
 footer {
   border-top: 1px solid var(--line);
   padding: 48px 24px;
@@ -639,7 +623,6 @@ footer {
   border-top: 1px solid var(--line);
 }
 
-/* скроллбар */
 ::-webkit-scrollbar { width: 10px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb {
@@ -649,7 +632,6 @@ footer {
 }
 ::-webkit-scrollbar-thumb:hover { background: #3b4252; }
 
-/* мобилки */
 @media (max-width: 640px) {
   .hero { padding: 100px 20px 100px; min-height: 92vh; }
   .hero-logo { width: 88px; height: 88px; font-size: 48px; border-radius: 22px; }
@@ -664,7 +646,6 @@ footer {
 </head>
 <body>
 
-<!-- ХЕДЕР -->
 <header>
   <div class="nav">
     <a class="brand" href="#">
@@ -679,7 +660,6 @@ footer {
   </div>
 </header>
 
-<!-- ГЕРОЙ -->
 <section class="hero">
   <div class="hero-bg"></div>
 
@@ -725,7 +705,6 @@ footer {
 
 <main>
 
-  <!-- FEATURES -->
   <section id="features">
     <div class="section-head">
       <div class="section-label">Возможности</div>
@@ -772,7 +751,6 @@ footer {
     </div>
   </section>
 
-  <!-- HOW -->
   <section id="how">
     <div class="section-head">
       <div class="section-label">Установка</div>
@@ -799,7 +777,6 @@ footer {
     </div>
   </section>
 
-  <!-- CTA -->
   <div class="cta-section" id="download">
     <div class="cta">
       <h2>Готов попробовать?</h2>
@@ -817,7 +794,6 @@ footer {
 
 </main>
 
-<!-- ФУТЕР -->
 <footer>
   <div class="footer-inner">
     <div class="footer-brand">
@@ -838,7 +814,6 @@ footer {
 </footer>
 
 <script>
-// лёгкий эффект подсветки карточек за курсором
 document.querySelectorAll('.feature').forEach(el => {
   el.addEventListener('mousemove', e => {
     const r = el.getBoundingClientRect();
@@ -847,7 +822,6 @@ document.querySelectorAll('.feature').forEach(el => {
   });
 });
 
-// затемнение хедера при скролле
 const header = document.querySelector('header');
 window.addEventListener('scroll', () => {
   header.style.background = window.scrollY > 60
